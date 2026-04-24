@@ -1,8 +1,10 @@
 import { signal } from '@angular/core';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { watchSignal } from '../../src/lib/advanced/watch-signal';
 import { computedAsync } from '../../src/lib/advanced/computed-async';
 import { signalProfiler } from '../../src/lib/advanced/signal-profiler';
+import { signalGroup } from '../../src/lib/advanced/signal-group';
+import { persistedComputed, readPersistedComputed } from '../../src/lib/advanced/persisted-computed';
 
 // ─── watchSignal ─────────────────────────────────────────────────────────────
 
@@ -245,5 +247,152 @@ describe('signalProfiler', () => {
 
     expect(entries1).toHaveLength(1);
     expect(entries2).toHaveLength(0);
+  });
+});
+
+// ─── signalGroup ─────────────────────────────────────────────────────────────
+
+describe('signalGroup', () => {
+  it('should create a WritableSignal for each key', () => {
+    const group = signalGroup({ name: 'Felipe', age: 30 });
+
+    expect(group.name()).toBe('Felipe');
+    expect(group.age()).toBe(30);
+  });
+
+  it('should allow setting individual signals', () => {
+    const group = signalGroup({ name: '', role: 'viewer' });
+
+    group.name.set('María');
+    expect(group.name()).toBe('María');
+    expect(group.role()).toBe('viewer'); // unchanged
+  });
+
+  it('snapshot() returns all current values', () => {
+    const group = signalGroup({ x: 1, y: 2, z: 3 });
+    group.y.set(99);
+
+    expect(group.snapshot()).toEqual({ x: 1, y: 99, z: 3 });
+  });
+
+  it('snapshot() reflects latest values after multiple sets', () => {
+    const group = signalGroup({ a: 'a', b: 'b' });
+    group.a.set('A');
+    group.b.set('B');
+
+    expect(group.snapshot()).toEqual({ a: 'A', b: 'B' });
+  });
+
+  it('reset() restores all signals to initial values', () => {
+    const group = signalGroup({ count: 0, label: 'init' });
+    group.count.set(42);
+    group.label.set('changed');
+
+    group.reset();
+
+    expect(group.count()).toBe(0);
+    expect(group.label()).toBe('init');
+  });
+
+  it('patch() updates only specified keys', () => {
+    const group = signalGroup({ name: 'A', age: 1, active: false });
+    group.patch({ name: 'B', active: true });
+
+    expect(group.name()).toBe('B');
+    expect(group.age()).toBe(1); // unchanged
+    expect(group.active()).toBe(true);
+  });
+
+  it('patch() with empty object changes nothing', () => {
+    const group = signalGroup({ x: 10 });
+    group.patch({});
+    expect(group.x()).toBe(10);
+  });
+
+  it('signals are reactive — computedMap works over snapshot values', () => {
+    const group = signalGroup({ items: [1, 2, 3] });
+    group.items.set([4, 5, 6]);
+    expect(group.snapshot().items).toEqual([4, 5, 6]);
+  });
+
+  it('reset() after patch restores original values', () => {
+    const group = signalGroup({ score: 0 });
+    group.patch({ score: 100 });
+    group.reset();
+    expect(group.score()).toBe(0);
+  });
+});
+
+// ─── persistedComputed ───────────────────────────────────────────────────────
+
+describe('persistedComputed', () => {
+  beforeEach(() => { localStorage.clear(); });
+  afterEach(() => { localStorage.clear(); });
+
+  it('should compute and return value from factory', () => {
+    const base = signal(5);
+    const doubled = persistedComputed('test-double', () => base() * 2);
+    expect(doubled()).toBe(10);
+  });
+
+  it('should save result to localStorage', () => {
+    const base = signal(3);
+    const result = persistedComputed('test-save', () => base() * 10);
+    result(); // trigger computation
+
+    const raw = localStorage.getItem('__psc__test-save');
+    expect(raw).not.toBeNull();
+    const parsed = JSON.parse(raw!);
+    expect(JSON.parse(parsed.v)).toBe(30);
+  });
+
+  it('should be reactive — updates when dependency changes', () => {
+    const base = signal(1);
+    const comp = persistedComputed('test-reactive', () => base() + 100);
+
+    expect(comp()).toBe(101);
+    base.set(5);
+    expect(comp()).toBe(105);
+  });
+
+  it('readPersistedComputed returns cached value', () => {
+    const base = signal(7);
+    const comp = persistedComputed('test-read', () => base() * 3);
+    comp(); // trigger and save
+
+    const cached = readPersistedComputed<number>('test-read');
+    expect(cached).toBe(21);
+  });
+
+  it('readPersistedComputed returns undefined when no cache', () => {
+    const cached = readPersistedComputed('non-existent');
+    expect(cached).toBeUndefined();
+  });
+
+  it('should respect TTL — expired cache returns undefined via readPersistedComputed', () => {
+    const base = signal(1);
+    const comp = persistedComputed('test-ttl', () => base(), { ttl: 1 });
+    comp();
+
+    // Manually set an old timestamp
+    const cacheKey = '__psc__test-ttl';
+    const existing = JSON.parse(localStorage.getItem(cacheKey)!);
+    localStorage.setItem(cacheKey, JSON.stringify({ ...existing, ts: Date.now() - 100 }));
+
+    const cached = readPersistedComputed('test-ttl', { ttl: 1 });
+    expect(cached).toBeUndefined();
+  });
+
+  it('should not write to storage redundantly when value is unchanged', () => {
+    const base = signal(42);
+    const spy = vi.spyOn(Storage.prototype, 'setItem');
+
+    const comp = persistedComputed('test-dedup', () => base());
+    comp(); // first read — saves
+    comp(); // second read — same value, no save
+
+    // setItem called once (first computation only)
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
   });
 });

@@ -4,3 +4,7 @@ export { computedAsync } from './computed-async';
 export type { ComputedAsyncOptions, AsyncComputedResult } from './computed-async';
 export { signalProfiler } from './signal-profiler';
 export type { SignalProfiler, ProfilerEntry } from './signal-profiler';
+export { signalGroup } from './signal-group';
+export type { SignalGroupResult, SignalGroupSignals } from './signal-group';
+export { persistedComputed, readPersistedComputed } from './persisted-computed';
+export type { PersistedComputedOptions } from './persisted-computed';
