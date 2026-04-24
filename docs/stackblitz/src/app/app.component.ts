@@ -14,7 +14,7 @@ type Tab = 'todo' | 'search' | 'form' | 'cart';
   template: `
     <div class="shell">
       <div class="header">
-        <h1><span>@signals-toolkit</span>/core — Live Demo</h1>
+        <h1><span>&#64;signals-toolkit</span>/core — Live Demo</h1>
         <p>Interactive examples of all helpers. Open the source files on the left to explore.</p>
       </div>
 

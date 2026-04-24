@@ -6,6 +6,17 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.0] - 2026-04-24
+
+### Added
+
+- **`signalGroup(initialValues)`** — groups related WritableSignals with `snapshot()`, `reset()`, and `patch()` utilities
+- **`persistedComputed(key, factory, options?)`** — computed Signal that saves its result to localStorage on every computation
+- **`readPersistedComputed(key, options?)`** — reads a cached `persistedComputed` value without running the factory
+- **`computedAsync`** now receives an `AbortSignal` as second argument — in-flight HTTP requests are cancelled automatically when the source signal changes
+
+---
+
 ## [1.0.0] - 2026-04-24
 
 ### First stable release
