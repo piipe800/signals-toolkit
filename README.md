@@ -33,6 +33,7 @@ npm install @signals-toolkit/core
 - [signalProfiler](#signalprofiler)
 - [signalGroup](#signalgroup)
 - [persistedComputed](#persistedcomputed)
+- [createSignalHarness](#createsignalharness)
 
 ---
 
@@ -338,7 +339,7 @@ const cached = readPersistedComputed<number>('cart-total'); // 15
 Wraps a `WritableSignal` with history tracking for easier test assertions.
 
 ```typescript
-import { createSignalHarness } from '@signals-toolkit/core/testing';
+import { createSignalHarness } from '@signals-toolkit/core';
 
 const { signal: search, read, history } = createSignalHarness('');
 
@@ -370,6 +371,18 @@ expect(history()).toEqual(['', 'hello', 'world']);
 | `signalGroup(initialValues)` | `SignalGroupResult<T>` | No |
 | `persistedComputed(key, factory, opts?)` | `Signal<T>` | No |
 | `readPersistedComputed(key, opts?)` | `T \| undefined` | No |
+
+---
+
+## Documentation
+
+| Doc | Description |
+|-----|-------------|
+| [API Reference](docs/API.md) | Complete technical reference — signatures, types, options |
+| [Migration Guide](docs/MIGRATION.md) | RxJS → Signals patterns with before/after examples |
+| [Best Practices](docs/BEST_PRACTICES.md) | When to use each helper, common mistakes, performance tips |
+| [Examples](docs/examples/) | Real Angular component examples |
+| [Contributing](CONTRIBUTING.md) | How to add helpers, PR guidelines, dev workflow |
 
 ---
 

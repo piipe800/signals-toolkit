@@ -14,3 +14,5 @@
 
 export * from './lib/index';
 export * from './types';
+export { createSignalHarness } from './testing/test-harness';
+export type { SignalHarness } from './testing/test-harness';
