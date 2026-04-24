@@ -1,0 +1,286 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+/* ── Layout ─────────────────────────────────────────── */
+.shell {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.header h1 span { color: #818cf8; }
+
+.header p {
+  color: #94a3b8;
+  margin-top: 0.4rem;
+  font-size: 0.95rem;
+}
+
+/* ── Tabs ────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 0.5rem;
+}
+
+.tab-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: transparent;
+  color: #64748b;
+  transition: all 0.15s;
+}
+
+.tab-btn:hover { color: #e2e8f0; background: #1e293b; }
+.tab-btn.active { background: #4f46e5; color: #fff; }
+
+/* ── Card ────────────────────────────────────────────── */
+.card {
+  background: #1e293b;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid #334155;
+}
+
+.card h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #f1f5f9;
+}
+
+.card .subtitle {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 1.25rem;
+}
+
+.card .subtitle code {
+  color: #818cf8;
+  background: #0f172a;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.78rem;
+}
+
+/* ── Form controls ───────────────────────────────────── */
+input[type="text"], input[type="number"], select {
+  width: 100%;
+  padding: 0.6rem 0.875rem;
+  border-radius: 0.5rem;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input:focus, select:focus { border-color: #4f46e5; }
+
+label {
+  display: block;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 0.35rem;
+}
+
+.field { margin-bottom: 1rem; }
+
+.row { display: flex; gap: 0.75rem; }
+.row .field { flex: 1; }
+
+/* ── Buttons ─────────────────────────────────────────── */
+button {
+  padding: 0.55rem 1.25rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.btn-primary { background: #4f46e5; color: #fff; }
+.btn-primary:hover { background: #4338ca; }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-secondary { background: #334155; color: #e2e8f0; }
+.btn-secondary:hover { background: #475569; }
+
+.btn-danger { background: #7f1d1d; color: #fca5a5; }
+.btn-danger:hover { background: #991b1b; }
+
+.btn-sm { padding: 0.3rem 0.75rem; font-size: 0.8rem; }
+
+.actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+
+/* ── Todo list ───────────────────────────────────────── */
+.todo-input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.todo-input-row input { flex: 1; }
+
+.filter-tabs { display: flex; gap: 0.35rem; margin-bottom: 0.875rem; }
+.filter-tabs button {
+  font-size: 0.78rem;
+  padding: 0.3rem 0.75rem;
+  background: #0f172a;
+  color: #64748b;
+}
+.filter-tabs button.active { background: #312e81; color: #a5b4fc; }
+
+.todo-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  background: #0f172a;
+  border-radius: 0.5rem;
+  border: 1px solid #1e293b;
+}
+
+.todo-item input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: #4f46e5;
+}
+
+.todo-item span { flex: 1; font-size: 0.9rem; }
+.todo-item.done span { text-decoration: line-through; color: #475569; }
+.todo-item .del { background: transparent; color: #475569; padding: 0.2rem 0.5rem; }
+.todo-item .del:hover { color: #ef4444; }
+
+.stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #334155;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+.stats strong { color: #94a3b8; }
+
+/* ── Search demo ─────────────────────────────────────── */
+.search-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+  font-size: 0.82rem;
+  color: #64748b;
+  min-height: 1.5rem;
+}
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge-waiting { background: #1e293b; color: #64748b; }
+.badge-debouncing { background: #451a03; color: #fb923c; }
+.badge-applied { background: #14532d; color: #4ade80; }
+
+.timeline {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #0f172a;
+  border-radius: 0.5rem;
+  font-size: 0.78rem;
+  color: #64748b;
+  max-height: 140px;
+  overflow-y: auto;
+}
+.timeline-entry { padding: 0.2rem 0; border-bottom: 1px solid #1e293b; }
+.timeline-entry:last-child { border-bottom: none; }
+.timeline-entry .ts { color: #475569; margin-right: 0.5rem; }
+.timeline-entry .val { color: #818cf8; }
+
+/* ── Signal group form ───────────────────────────────── */
+.snapshot-box {
+  margin-top: 1rem;
+  padding: 0.875rem;
+  background: #0f172a;
+  border-radius: 0.5rem;
+  border: 1px solid #334155;
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.8rem;
+  color: #7dd3fc;
+  white-space: pre;
+}
+
+/* ── Cart demo ───────────────────────────────────────── */
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+}
+.product-card {
+  padding: 0.75rem;
+  background: #0f172a;
+  border-radius: 0.5rem;
+  border: 1px solid #1e293b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+.product-card .info { flex: 1; }
+.product-card .name { font-size: 0.875rem; font-weight: 500; }
+.product-card .price { font-size: 0.8rem; color: #94a3b8; }
+
+.cart-items { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+.cart-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #0f172a;
+  border-radius: 0.5rem;
+}
+.cart-row .name { flex: 1; font-size: 0.875rem; }
+.cart-row .qty-ctrl { display: flex; align-items: center; gap: 0.35rem; }
+.cart-row .qty-ctrl button { padding: 0.2rem 0.6rem; background: #334155; color: #e2e8f0; font-size: 0.85rem; }
+.cart-row .qty-ctrl span { min-width: 1.5rem; text-align: center; font-size: 0.85rem; }
+.cart-row .line-total { font-size: 0.82rem; color: #818cf8; min-width: 4rem; text-align: right; }
+
+.total-bar {
+  padding: 0.875rem;
+  background: #0f172a;
+  border-radius: 0.5rem;
+  border: 1px solid #334155;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.total-bar .label { font-size: 0.9rem; color: #94a3b8; }
+.total-bar .amount { font-size: 1.25rem; font-weight: 700; color: #818cf8; }
+
+.empty-state { text-align: center; padding: 2rem; color: #475569; font-size: 0.9rem; }

@@ -5,6 +5,7 @@ Utilities and helpers to simplify working with **Angular Signals**.
 [![npm version](https://img.shields.io/npm/v/@signals-toolkit/core)](https://www.npmjs.com/package/@signals-toolkit/core)
 [![CI](https://github.com/piipe800/signals-toolkit/actions/workflows/test.yml/badge.svg)](https://github.com/piipe800/signals-toolkit/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz_small.svg)](https://stackblitz.com/github/piipe800/signals-toolkit/tree/main/docs/stackblitz)
 
 ## Installation
 
