@@ -120,6 +120,60 @@ describe('computedAsync', () => {
 
     expect(value()).toBe('HELLO');
   });
+
+  it('should pass AbortSignal to asyncFn', async () => {
+    const id = signal(1);
+    let receivedSignal: AbortSignal | null = null;
+
+    const { value } = computedAsync(id, async (n, abortSignal) => {
+      receivedSignal = abortSignal;
+      return n * 10;
+    });
+
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
+
+    expect(receivedSignal).toBeInstanceOf(AbortSignal);
+    expect(value()).toBe(10);
+  });
+
+  it('should silently ignore DOMException AbortError', async () => {
+    const id = signal(1);
+    const { error } = computedAsync(id, async () => {
+      throw new DOMException('Aborted', 'AbortError');
+    });
+
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
+
+    expect(error()).toBeNull();
+  });
+
+  it('should silently ignore Error with name AbortError', async () => {
+    const id = signal(1);
+    const { error } = computedAsync(id, async () => {
+      const e = new Error('Aborted');
+      e.name = 'AbortError';
+      throw e;
+    });
+
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
+
+    expect(error()).toBeNull();
+  });
+
+  it('should provide a non-aborted AbortSignal on first fetch', async () => {
+    const id = signal(1);
+    let captured: AbortSignal | null = null;
+
+    computedAsync(id, async (_n, abortSignal) => {
+      captured = abortSignal;
+      return 42;
+    });
+
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
+
+    expect(captured).toBeInstanceOf(AbortSignal);
+    expect(captured!.aborted).toBe(false);
+  });
 });
 
 // ─── signalProfiler ──────────────────────────────────────────────────────────
