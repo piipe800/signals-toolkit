@@ -39,6 +39,10 @@
     "vitest": "^1.6.0",
     "zone.js": "^0.14.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/piipe800/signals-toolkit"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
