@@ -1,0 +1,64 @@
+# @signals-toolkit/core
+
+> A utility library for Angular Signals that covers the most common reactive patterns with zero boilerplate.
+
+## What it is
+
+`@signals-toolkit/core` is an open-source TypeScript library for Angular 16+ that provides 14 helper functions on top of Angular Signals. It fills the gap between Angular's built-in `signal()`, `computed()`, and `effect()` primitives and real-world usage patterns like persistent state, debounced inputs, reactive HTTP fetching, and grouped signal management.
+
+## Install
+
+```bash
+npm install @signals-toolkit/core
+```
+
+Peer dependencies: `@angular/core >= 16`, `rxjs >= 6.5` (optional, required for RxJS bridge helpers only).
+
+## Helpers summary
+
+### Computed array utilities
+- `computedMap(source, fn)` — transforms each element of an array signal. Equivalent to `computed(() => source().map(fn))`.
+- `computedFilter(source, fn)` — filters an array signal by predicate. Equivalent to `computed(() => source().filter(fn))`.
+- `computedReduce(source, fn, init)` — reduces an array signal to a single value. Equivalent to `computed(() => source().reduce(fn, init))`.
+
+### Persistent storage
+- `signalStorage(key, initialValue, options?)` — creates a `WritableSignal` that syncs to `localStorage` (or any `Storage`) on every write. Restores persisted value on initialization. Works exactly like a regular `WritableSignal`.
+- `persistedComputed(key, factory, options?)` — computed signal that caches its result to storage. Accepts a `ttl` (time-to-live in ms).
+- `readPersistedComputed(key, options?)` — reads a `persistedComputed` cache without creating a signal. Useful before Angular boots.
+
+### RxJS bridge
+- `signalFromObservable(obs$, initialValue)` — subscribes to an Observable and returns `{ value, loading, error, destroy }` signals.
+- `toObservable(signal, { injector? })` — converts a Signal to an Observable. Requires an Angular `Injector` for reactive tracking.
+
+### Rate limiting
+- `debounceSignal(initialValue, delay)` — `WritableSignal` whose `.set()` is debounced. Ideal for search inputs. Supports `leading`/`trailing` options.
+- `throttleSignal(initialValue, delay)` — `WritableSignal` whose `.set()` is throttled. Ideal for scroll/resize events.
+- `distinctUntilChanged(source, equalityFn?)` — computed Signal that suppresses consecutive equal values.
+
+### Advanced
+- `watchSignal(source, { onChange, onError, injector? })` — observer pattern over a signal with error handling and lifecycle cleanup.
+- `computedAsync(source, asyncFn, { initialValue?, injector? })` — reactive async computed with `value`, `loading`, `error` signals. Passes `AbortSignal` to cancel in-flight HTTP requests when the source changes.
+- `signalGroup(initialValues)` — groups related `WritableSignal`s with `snapshot()`, `reset()`, and `patch()` utilities.
+- `signalProfiler()` — measures signal computation durations with `start()`, `stop()`, `report()`.
+
+### Testing
+- `createSignalHarness(initialValue)` — wraps a `WritableSignal` with history tracking for test assertions.
+
+## Key design decisions
+
+- No injection context required for most helpers — only `watchSignal`, `computedAsync`, and `toObservable` need an Angular `Injector` for reactive tracking, and they degrade gracefully without one.
+- `signalStorage` writes synchronously on `.set()` — no `effect()` needed, no injection context.
+- `computedAsync` uses `AbortController` to cancel previous in-flight HTTP requests when the source signal changes, preventing stale data and wasted bandwidth.
+- Zero bundled dependencies — `@angular/core` and `rxjs` are peer dependencies excluded from the bundle. Package size: 8.8KB.
+
+## Links
+
+- npm: https://www.npmjs.com/package/@signals-toolkit/core
+- GitHub: https://github.com/piipe800/signals-toolkit
+- API Reference: https://github.com/piipe800/signals-toolkit/blob/main/docs/API.md
+- Migration guide (RxJS to Signals): https://github.com/piipe800/signals-toolkit/blob/main/docs/MIGRATION.md
+- Best practices: https://github.com/piipe800/signals-toolkit/blob/main/docs/BEST_PRACTICES.md
+
+## Author
+
+Andrés Felipe León Sánchez — https://github.com/piipe800

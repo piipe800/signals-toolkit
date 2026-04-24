@@ -59,9 +59,22 @@
   ],
   "keywords": [
     "angular",
+    "angular-signals",
     "signals",
-    "computed",
-    "localStorage",
-    "utilities"
+    "computed-signal",
+    "writable-signal",
+    "signal-storage",
+    "signal-utilities",
+    "rxjs",
+    "rxjs-interop",
+    "debounce",
+    "throttle",
+    "localstorage",
+    "state-management",
+    "reactive",
+    "typescript",
+    "angular16",
+    "angular17",
+    "angular18"
   ]
 }
