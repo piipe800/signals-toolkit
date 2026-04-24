@@ -1,0 +1,4 @@
+{
+  "installDependencies": true,
+  "startCommand": "ng serve --port 4200"
+}
