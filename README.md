@@ -31,6 +31,8 @@ npm install @signals-toolkit/core
 - [watchSignal](#watchsignal)
 - [computedAsync](#computedasync)
 - [signalProfiler](#signalprofiler)
+- [signalGroup](#signalgroup)
+- [persistedComputed](#persistedcomputed)
 
 ---
 
@@ -241,7 +243,7 @@ ref.destroy();
 
 ### `computedAsync`
 
-Creates `value`, `loading`, and `error` signals driven by an async function over a source signal. Prevents stale results via request ID tracking. Requires an `Injector` to re-fetch reactively when the source signal changes.
+Creates `value`, `loading`, and `error` signals driven by an async function over a source signal. Passes an `AbortSignal` to cancel in-flight HTTP requests automatically when the source changes. Requires an `Injector` to re-fetch reactively.
 
 ```typescript
 import { inject, Injector, signal } from '@angular/core';
@@ -252,7 +254,8 @@ const injector = inject(Injector);
 
 const { value, loading, error } = computedAsync(
   userId,
-  id => fetch(`/api/users/${id}`).then(r => r.json()),
+  // AbortSignal cancels the previous fetch when userId changes
+  (id, abortSignal) => fetch(`/api/users/${id}`, { signal: abortSignal }).then(r => r.json()),
   { initialValue: null, injector }
 );
 
@@ -281,6 +284,49 @@ profiler.report();
 
 profiler.getEntries(); // [{ name, duration, timestamp }]
 profiler.clear();
+```
+
+### `signalGroup`
+
+Groups related `WritableSignal`s under one object with `snapshot()`, `reset()`, and `patch()` utilities. A lightweight reactive store without boilerplate.
+
+```typescript
+import { signalGroup } from '@signals-toolkit/core';
+
+const form = signalGroup({
+  name:  '',
+  email: '',
+  role:  'viewer' as 'viewer' | 'editor' | 'admin',
+});
+
+// Each key is a full WritableSignal
+form.name.set('Felipe');
+form.patch({ email: 'felipe@example.com', role: 'admin' });
+
+form.snapshot(); // { name: 'Felipe', email: 'felipe@example.com', role: 'admin' }
+form.reset();    // all signals back to initial values
+```
+
+### `persistedComputed`
+
+Creates a computed Signal that saves its result to `localStorage` on every computation. On the next page load the cached value is immediately available without recomputing.
+
+```typescript
+import { signal } from '@angular/core';
+import { persistedComputed, readPersistedComputed } from '@signals-toolkit/core';
+
+const items = signal([1, 2, 3, 4, 5]);
+
+const total = persistedComputed(
+  'cart-total',
+  () => items().reduce((sum, n) => sum + n, 0),
+  { ttl: 60_000 } // cache expires after 1 minute
+);
+
+total(); // 15 — computed and saved to localStorage
+
+// Read cached value without creating the computed (e.g. before Angular boots):
+const cached = readPersistedComputed<number>('cart-total'); // 15
 ```
 
 ---
@@ -321,6 +367,9 @@ expect(history()).toEqual(['', 'hello', 'world']);
 | `watchSignal(source, opts)` | `WatchRef` | For reactive tracking |
 | `computedAsync(source, fn, opts?)` | `AsyncComputedResult<T>` | For reactive re-fetch |
 | `signalProfiler()` | `SignalProfiler` | No |
+| `signalGroup(initialValues)` | `SignalGroupResult<T>` | No |
+| `persistedComputed(key, factory, opts?)` | `Signal<T>` | No |
+| `readPersistedComputed(key, opts?)` | `T \| undefined` | No |
 
 ---
 

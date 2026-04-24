@@ -25,6 +25,8 @@ Complete technical reference for all helpers, types, and options.
   - [watchSignal](#watchsignal)
   - [computedAsync](#computedasync)
   - [signalProfiler](#signalprofiler)
+  - [signalGroup](#signalgroup)
+  - [persistedComputed](#persistedcomputed)
 - [Testing](#testing)
   - [createSignalHarness](#createsignalharness)
 
@@ -45,6 +47,9 @@ import type {
   AsyncComputedResult,
   SignalProfiler,
   ProfilerEntry,
+  SignalGroupResult,
+  SignalGroupSignals,
+  PersistedComputedOptions,
   SignalHarness,
 } from '@signals-toolkit/core';
 ```
@@ -563,7 +568,7 @@ ngOnDestroy() {
 ```typescript
 function computedAsync<TInput, TOutput>(
   source: Signal<TInput>,
-  asyncFn: (value: TInput) => Promise<TOutput>,
+  asyncFn: (value: TInput, abortSignal: AbortSignal) => Promise<TOutput>,
   options?: ComputedAsyncOptions<TOutput>
 ): AsyncComputedResult<TOutput>
 ```
@@ -585,6 +590,8 @@ Creates a set of signals driven by an async function. When the source signal cha
 | `options.injector` | `Injector` | Required for reactive re-fetching on source changes |
 
 **Returns:** `AsyncComputedResult<TOutput>`
+
+**Cancellation:** Each run creates a new `AbortController`. When a new run starts, the previous controller is aborted before the new fetch begins. Pass the `abortSignal` to `fetch()` or any cancellable API to benefit from true HTTP cancellation. `AbortError` is silently ignored — it will not appear in `error()`.
 
 **Race condition handling:** Each run is assigned a unique ID. If a newer run starts before an older one finishes, the older result is silently discarded.
 
@@ -656,6 +663,140 @@ profiler.report();
 // [signals-profiler] op-b: 9.87ms
 
 profiler.clear(); // reset for next measurement session
+```
+
+---
+
+### `signalGroup`
+
+```typescript
+function signalGroup<T extends Record<string, unknown>>(
+  initialValues: T
+): SignalGroupResult<T>
+```
+
+```typescript
+type SignalGroupResult<T> = { [K in keyof T]: WritableSignal<T[K]> } & {
+  snapshot(): T;
+  reset(): void;
+  patch(values: Partial<T>): void;
+}
+```
+
+Groups related `WritableSignal`s under one object. Each key in `initialValues` becomes a `WritableSignal` with the corresponding type. Provides `snapshot`, `reset`, and `patch` utilities for managing the group as a whole.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `initialValues` | `T` | Plain object — each key becomes a `WritableSignal` |
+
+**Returns:** `SignalGroupResult<T>` — the signals plus `snapshot`, `reset`, `patch`.
+
+**Notes:**
+- `reset()` restores the exact values passed to `signalGroup()` at creation time.
+- `patch()` only updates the keys present in the argument — other signals are untouched.
+- `snapshot()` returns a plain object copy — mutating it does not affect the signals.
+- Each signal is independent and can be used with any other helper (`computedFilter`, `watchSignal`, etc.).
+
+```typescript
+const user = signalGroup({
+  name: '',
+  age: 0,
+  role: 'viewer' as 'viewer' | 'editor' | 'admin',
+});
+
+user.name.set('Felipe');
+user.patch({ age: 28, role: 'admin' });
+
+user.snapshot();
+// { name: 'Felipe', age: 28, role: 'admin' }
+
+user.reset();
+// name() → '', age() → 0, role() → 'viewer'
+
+// Combine with other helpers
+const isAdmin = computedFilter(
+  signal([user.role()]),
+  r => r === 'admin'
+);
+```
+
+---
+
+### `persistedComputed`
+
+```typescript
+function persistedComputed<T>(
+  key: string,
+  factory: () => T,
+  options?: PersistedComputedOptions<T>
+): Signal<T>
+```
+
+```typescript
+interface PersistedComputedOptions<T> extends StorageOptions {
+  ttl?: number; // milliseconds, undefined = never expires
+}
+```
+
+Creates a computed Signal that persists its result to storage on every computation. Redundant writes (same serialized value) are skipped. Useful for caching expensive computations across page loads.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `key` | `string` | Storage key (prefixed internally as `__psc__key`) |
+| `factory` | `() => T` | Reactive factory — re-runs when signal dependencies change |
+| `options.ttl` | `number` | Cache lifetime in ms. Expired cache is discarded on read. |
+| `options.storage` | `Storage` | `localStorage` by default |
+
+**Returns:** `Signal<T>` — read-only computed signal.
+
+**Notes:**
+- The factory is still reactive — it re-runs whenever its signal dependencies change.
+- Every new result overwrites the previous cache entry.
+- Writing is skipped when the serialized value hasn't changed (reference-stable primitives and objects).
+- Safe in SSR — returns a regular `computed()` when `window` is unavailable.
+
+```typescript
+const items = signal([10, 20, 30]);
+
+const total = persistedComputed(
+  'cart-total',
+  () => items().reduce((sum, n) => sum + n, 0),
+  { ttl: 300_000 } // 5 minutes
+);
+
+total(); // 60 — computed and saved
+
+items.set([1, 2, 3]);
+total(); // 6 — recomputed and saved
+
+// On next page load — cached value readable before Angular boots:
+const cached = readPersistedComputed<number>('cart-total'); // 6
+```
+
+---
+
+### `readPersistedComputed`
+
+```typescript
+function readPersistedComputed<T>(
+  key: string,
+  options?: Pick<PersistedComputedOptions<T>, 'storage' | 'deserializer' | 'ttl'>
+): T | undefined
+```
+
+Reads the cached value for a `persistedComputed` key without running the factory or creating any signals. Returns `undefined` if no cache exists or it has expired.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `key` | `string` | Same key used in `persistedComputed` |
+| `options.ttl` | `number` | Must match the TTL used when writing, or pass a different threshold |
+
+```typescript
+// Read before the app initialises — e.g. to show a skeleton with real data
+const cachedTotal = readPersistedComputed<number>('cart-total');
+if (cachedTotal !== undefined) {
+  renderSkeleton(cachedTotal);
+}
 ```
 
 ---
