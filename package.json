@@ -23,7 +23,13 @@
     "lint": "eslint src/**/*.ts"
   },
   "peerDependencies": {
-    "@angular/core": ">=16.0.0"
+    "@angular/core": ">=16.0.0",
+    "rxjs": ">=6.5.3"
+  },
+  "peerDependenciesMeta": {
+    "rxjs": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@angular/core": "^18.0.0",
