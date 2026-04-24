@@ -1,4 +1,4 @@
-import { Component, computed } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { signalGroup } from '@signals-toolkit/core';
@@ -41,7 +41,7 @@ import { signalGroup } from '@signals-toolkit/core';
       </div>
 
       <div class="actions">
-        <button class="btn-secondary btn-sm" (click)="form.reset()">
+        <button class="btn-secondary btn-sm" (click)="form.reset(); submitted.set(false)">
           Reset all
         </button>
         <button class="btn-secondary btn-sm" (click)="fillSample()">
@@ -68,8 +68,6 @@ import { signalGroup } from '@signals-toolkit/core';
   `,
 })
 export class FormDemoComponent {
-  submitted = computed(() => false);
-
   form = signalGroup({
     name:  '',
     age:   0,
@@ -77,8 +75,7 @@ export class FormDemoComponent {
     role:  'viewer' as 'viewer' | 'editor' | 'admin',
   });
 
-  private _submitted = false;
-  isSubmitted() { return this._submitted; }
+  submitted = signal(false);
 
   isValid = computed(() =>
     !!this.form.name() && !!this.form.email() && this.form.age() > 0
@@ -95,13 +92,12 @@ export class FormDemoComponent {
       email: 'felipe@example.com',
       role:  'admin',
     });
-    this._submitted = false;
+    this.submitted.set(false);
   }
 
   submit(): void {
     if (!this.isValid()) return;
-    console.log('Submitted:', this.form.snapshot());
-    this._submitted = true;
-    setTimeout(() => { this._submitted = false; }, 2500);
+    this.submitted.set(true);
+    setTimeout(() => this.submitted.set(false), 2500);
   }
 }
