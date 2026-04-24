@@ -6,7 +6,20 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [0.3.0] - 2025-04-23
+## [1.0.0] - 2026-04-24
+
+### First stable release
+
+- 12 helpers covering computed, storage, RxJS bridge, rate limiting, distinct values, advanced patterns, and testing utilities
+- 60 unit tests · 0 TypeScript errors · ESLint clean
+- Full API documentation (`docs/API.md`)
+- 4 real-world Angular component examples (`docs/examples/`)
+- GitHub Actions CI/CD with NPM provenance signing
+- Bundle size: 8.8KB (zero bundled dependencies)
+
+---
+
+## [0.3.0] - 2026-04-24
 
 ### Added — Advanced Utilities
 
